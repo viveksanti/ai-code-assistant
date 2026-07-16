@@ -70,6 +70,18 @@ const codeSlice = createSlice({
       state.activeAction = null;
       state.error = null;
     },
+    loadFromHistory(
+      state,
+      action: PayloadAction<{ code: string; language: string; result: string; historyAction: CodeAction }>
+    ) {
+      state.code = action.payload.code;
+      state.selectedLanguage = action.payload.language;
+      state.result = action.payload.result;
+      state.activeAction = action.payload.historyAction;
+      state.error = null;
+      state.showMismatchAlert = false;
+      state.detectedLanguage = null;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -112,6 +124,7 @@ export const {
   switchToDetectedLanguage,
   dismissMismatchAlert,
   clearResult,
+  loadFromHistory,
 } = codeSlice.actions;
 
 export default codeSlice.reducer;

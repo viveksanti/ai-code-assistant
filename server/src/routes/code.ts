@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import { analyzeCode } from "../services/aiService";
 import { detectLanguage, SUPPORTED_LANGUAGES } from "../services/languageDetector";
+import { prisma } from "../db/prisma";
 import {
   AnalyzeRequestBody,
   AnalyzeResponseBody,
@@ -8,6 +9,7 @@ import {
   CodeAction,
   DetectLanguageRequestBody,
   DetectLanguageResponseBody,
+  HistoryListResponse,
 } from "../types";
 
 const router = Router();
@@ -36,6 +38,16 @@ router.post(
 
     try {
       const result = await analyzeCode(code, language, action);
+
+      // save history, but don't let a db hiccup break the actual response
+      try {
+        await prisma.analysisHistory.create({
+          data: { code, language, action, result },
+        });
+      } catch (dbErr) {
+        console.error("Failed to save history:", dbErr);
+      }
+
       return res.json({ action, language, result });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error calling the AI service.";
@@ -63,6 +75,43 @@ router.post(
 
 router.get("/languages", (_req: Request, res: Response) => {
   res.json({ languages: SUPPORTED_LANGUAGES });
+});
+
+// --- history routes ---
+
+router.get(
+  "/history",
+  async (_req: Request, res: Response<HistoryListResponse | ApiErrorBody>) => {
+    try {
+      const items = await prisma.analysisHistory.findMany({
+        orderBy: { createdAt: "desc" },
+        take: 50,
+      });
+      return res.json({
+        items: items.map((item) => ({ ...item, createdAt: item.createdAt.toISOString() })),
+      });
+    } catch (err) {
+      return res.status(500).json({ error: "Could not load history." });
+    }
+  }
+);
+
+router.delete("/history/:id", async (req: Request, res: Response<ApiErrorBody | { ok: true }>) => {
+  try {
+    await prisma.analysisHistory.delete({ where: { id: req.params.id } });
+    return res.json({ ok: true });
+  } catch (err) {
+    return res.status(404).json({ error: "History entry not found." });
+  }
+});
+
+router.delete("/history", async (_req: Request, res: Response<ApiErrorBody | { ok: true }>) => {
+  try {
+    await prisma.analysisHistory.deleteMany({});
+    return res.json({ ok: true });
+  } catch (err) {
+    return res.status(500).json({ error: "Could not clear history." });
+  }
 });
 
 export default router;

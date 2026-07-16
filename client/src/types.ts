@@ -52,3 +52,12 @@ export interface DetectLanguageResponse {
   confidence: number;
   scores: Record<string, number>;
 }
+
+export interface HistoryItem {
+  id: string;
+  code: string;
+  language: string;
+  action: CodeAction;
+  result: string;
+  createdAt: string;
+}

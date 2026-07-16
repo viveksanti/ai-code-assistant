@@ -3,6 +3,7 @@ import { CodeEditor } from "./components/CodeEditor";
 import { MismatchAlert } from "./components/MismatchAlert";
 import { ActionPanel } from "./components/ActionPanel";
 import { ResultPanel } from "./components/ResultPanel";
+import { HistoryPanel } from "./components/HistoryPanel";
 
 function App() {
   return (
@@ -30,6 +31,11 @@ function App() {
           <ResultPanel />
         </section>
       </main>
+
+      <section className="app__panel">
+        <h2 className="app__panel-title">History</h2>
+        <HistoryPanel />
+      </section>
     </div>
   );
 }

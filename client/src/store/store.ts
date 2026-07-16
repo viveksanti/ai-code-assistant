@@ -1,9 +1,11 @@
 import { configureStore } from "@reduxjs/toolkit";
 import codeReducer from "./codeSlice";
+import historyReducer from "./historySlice";
 
 export const store = configureStore({
   reducer: {
     code: codeReducer,
+    history: historyReducer,
   },
 });
 

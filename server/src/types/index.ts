@@ -25,3 +25,16 @@ export interface DetectLanguageResponseBody {
 export interface ApiErrorBody {
   error: string;
 }
+
+export interface HistoryItem {
+  id: string;
+  code: string;
+  language: string;
+  action: CodeAction;
+  result: string;
+  createdAt: string;
+}
+
+export interface HistoryListResponse {
+  items: HistoryItem[];
+}
